@@ -10,6 +10,8 @@ class Player(pygame.sprite.Sprite):
         self.anim_speed = 0.07
         self.image = self.anims['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
+        self.collision_rect = pygame.Rect(0, 0, 40, 64)
+        self.collision_rect.midbottom = self.rect.midbottom
 
         # player movement
         self.direction = pygame.math.Vector2(0, 0)  # movement is all in one neat variable :)
@@ -46,12 +48,14 @@ class Player(pygame.sprite.Sprite):
         elif self.flip == True:
             self.image = pygame.transform.flip(image, True, False)
 
-        if self.ground:
-            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
-        elif self.ceiling:
-            self.rect = self.image.get_rect(midtop=self.rect.midtop)
-        else:
-            self.rect = self.image.get_rect(center=self.rect.center)
+        # if self.ground:
+        #     self.collision_rect = self.image.get_rect(midbottom=self.collision_rect.midbottom)
+        # elif self.ceiling:
+        #     self.collision_rect = self.image.get_rect(midtop=self.collision_rect.midtop)
+        # else:
+        #     self.collision_rect = self.image.get_rect(center=self.collision_rect.center)
+
+        self.rect.midbottom = self.collision_rect.midbottom
 
 
     def get_input(self):  # to get all the keys the player presses
@@ -85,12 +89,9 @@ class Player(pygame.sprite.Sprite):
 
     def activate_gravity(self):
         self.direction.y += self.gravity  # this is so gravity increases on each frame
-        self.rect.y += self.direction.y  # affects the player sprite here
+        self.collision_rect.y += self.direction.y  # affects the player sprite here
 
     def update(self):  # used to control sprite behaviour
         self.get_input()
         self.get_player_status()
         self.animate()
-
-
-
