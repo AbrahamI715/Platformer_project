@@ -7,7 +7,7 @@ def import_folder(path):
     surface_list = []  # to get a list of strings (each file)
 
     for _, __ , img_files in walk(path):  # walk uses 3 pieces of info
-        image_scale = 2.5
+        image_scale = 2.2
         for image in img_files:
             full_path = path + '/' + image  # so we have all code needed from code to img
             img_surface = pygame.image.load(full_path).convert_alpha()

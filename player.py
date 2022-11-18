@@ -7,19 +7,26 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.character_assets()
         self.frame_index = 0  # used to pick out one of the anim frames
-        self.anim_speed = 0.06
+        self.anim_speed = 0.07
         self.image = self.anims['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
 
         # player movement
         self.direction = pygame.math.Vector2(0, 0)  # movement is all in one neat variable :)
         self.speed = 8
-        self.gravity = 0.8
-        self.jump_speed = -16
+        self.gravity = 0.6
+        self.jump_speed = -15
+
+        self.player_status = 'idle'  # the player animation starting point with no inputs
+        self.ceiling = False
+        self.ground = False
+        self.left = False
+        self.right = False
+        self.flip = False
 
     def character_assets(self):  # Allows us to access the path to character assets sheet
         path_to_char_folder = 'Character_assets/'
-        self.anims = {'idle': [], 'jump': [], 'run': []}  # using a dictionary to easily access the folder we want
+        self.anims = {'idle': [], 'jump': [], 'run': [], 'fall': []}  # using a dictionary to easily access the folder we want
 
         for animations in self.anims.keys():
             complete_path = path_to_char_folder + animations    # the animations is one of the lists in the dictionary
@@ -27,26 +34,51 @@ class Player(pygame.sprite.Sprite):
             self.anims[animations] = import_folder(complete_path)  # to get the animation we want to work on
 
     def animate(self):
-        current_anim = self.anims['idle']
+        current_anim = self.anims[self.player_status]
 
         self.frame_index += self.anim_speed
         if self.frame_index >= len(current_anim):  # once frame index is greater than the number of items in the list
             self.frame_index = 0
 
-        self.image = current_anim[int(self.frame_index)]
+        image = current_anim[int(self.frame_index)]  # setting image to be a local variable
+        if self.flip == False:
+            self.image = image
+        elif self.flip == True:
+            self.image = pygame.transform.flip(image, True, False)
+
+        if self.ground:
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+        elif self.ceiling:
+            self.rect = self.image.get_rect(midtop=self.rect.midtop)
+        else:
+            self.rect = self.image.get_rect(center=self.rect.center)
+
 
     def get_input(self):  # to get all the keys the player presses
         key_press = pygame.key.get_pressed()
 
         if key_press[pygame.K_d]:  # right
             self.direction.x = 1
+            self.flip = False
         elif key_press[pygame.K_a]:  # left
             self.direction.x = -1
+            self.flip = True
         else:  # no movement
             self.direction.x = 0
 
-        if key_press[pygame.K_SPACE]:  # to jump
+        if key_press[pygame.K_SPACE] and self.direction.y == 0:  # to jump
             self.jump()
+
+    def get_player_status(self):  # will check the current status of the player then set the animation appropriately
+        if self.direction.y < 0:  # if player jumping
+            self.player_status = 'jump'
+        elif self.direction.y > 1:  # player is falling
+            self.player_status = 'fall'
+        else:
+            if self.direction.x > 0 or self.direction.x < 0:
+                self.player_status = 'run'
+            else:
+                self.player_status = 'idle'
 
     def jump(self):
         self.direction.y = self.jump_speed
@@ -57,6 +89,8 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):  # used to control sprite behaviour
         self.get_input()
+        self.get_player_status()
         self.animate()
-        self.activate_gravity()
+
+
 

@@ -65,9 +65,17 @@ class Level:
                 if player.direction.y > 0:
                     player.rect.bottom = sprite.rect.top
                     player.direction.y = 0  # gravity cancels out
+                    player.ground = True
                 elif player.direction.y < 0:  # if the player is jumping
                     player.rect.top = sprite.rect.bottom
                     player.direction.y = 0
+                    player.ceiling = True
+
+            if player.ceiling and player.direction.y > 0:  # checking if player is falling
+                player.ceiling = False
+                # we need to do this so that the variable goes back to false once no longer touching the ceiling
+            elif player.ground and player.direction.y > 1 or player.direction.y < 0:  # checking if falling or jumping
+                player.ground = False
 
     def run(self):
         # tiles
@@ -75,8 +83,8 @@ class Level:
 
         # player
         self.player_group.update()
-        self.horiz_collision()
         self.vert_collision()
+        self.horiz_collision()
 
     def draw(self):
         self.tiles.draw(self.display_surface)
