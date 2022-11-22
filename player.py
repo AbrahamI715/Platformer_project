@@ -2,8 +2,9 @@ import pygame
 from add_on import import_folder
 
 
+
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, enemies_group: pygame.sprite.Group()):
         super().__init__()
         self.character_assets()
         self.frame_index = 0  # used to pick out one of the anim frames
@@ -20,15 +21,22 @@ class Player(pygame.sprite.Sprite):
         self.jump_speed = -15
 
         self.player_status = 'idle'  # the player animation starting point with no inputs
-        self.ceiling = False
-        self.ground = False
-        self.left = False
-        self.right = False
         self.flip = False
+
+        #player attacks
+        self.attacking = False
+        self.ready_to_attack = False
+        self.attack_rate = 1.0
+        self.attack_timer = 0.0
+        self.attackCooldown = 0
+        self.startAttackCooldown = False
+
+        # enemy stuff
+        self.enemies_group = enemies_group
 
     def character_assets(self):  # Allows us to access the path to character assets sheet
         path_to_char_folder = 'Character_assets/'
-        self.anims = {'idle': [], 'jump': [], 'run': [], 'fall': []}  # using a dictionary to easily access the folder we want
+        self.anims = {'idle': [], 'jump': [], 'run': [], 'fall': [], 'attack': []}  # using a dictionary to easily access the folder we want
 
         for animations in self.anims.keys():
             complete_path = path_to_char_folder + animations    # the animations is one of the lists in the dictionary
@@ -48,15 +56,7 @@ class Player(pygame.sprite.Sprite):
         elif self.flip == True:
             self.image = pygame.transform.flip(image, True, False)
 
-        # if self.ground:
-        #     self.collision_rect = self.image.get_rect(midbottom=self.collision_rect.midbottom)
-        # elif self.ceiling:
-        #     self.collision_rect = self.image.get_rect(midtop=self.collision_rect.midtop)
-        # else:
-        #     self.collision_rect = self.image.get_rect(center=self.collision_rect.center)
-
         self.rect.midbottom = self.collision_rect.midbottom
-
 
     def get_input(self):  # to get all the keys the player presses
         key_press = pygame.key.get_pressed()
@@ -73,6 +73,10 @@ class Player(pygame.sprite.Sprite):
         if key_press[pygame.K_SPACE] and self.direction.y == 0:  # to jump
             self.jump()
 
+        if key_press[pygame.K_e] and self.attackCooldown == 0:
+            self.attacking = True
+            self.startAttackCooldown = True
+
     def get_player_status(self):  # will check the current status of the player then set the animation appropriately
         if self.direction.y < 0:  # if player jumping
             self.player_status = 'jump'
@@ -84,6 +88,11 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.player_status = 'idle'
 
+        if self.attacking == True:
+            self.player_status = 'attack'
+
+
+
     def jump(self):
         self.direction.y = self.jump_speed
 
@@ -91,7 +100,31 @@ class Player(pygame.sprite.Sprite):
         self.direction.y += self.gravity  # this is so gravity increases on each frame
         self.collision_rect.y += self.direction.y  # affects the player sprite here
 
-    def update(self):  # used to control sprite behaviour
+    def update(self, time_delta):  # used to control sprite behaviour
         self.get_input()
         self.get_player_status()
         self.animate()
+
+        enemy_collisions = pygame.sprite.spritecollide(self, self.enemies_group, False)
+        if self.attacking and self.ready_to_attack:
+            print("player attacking")
+            self.attacking = False
+            if enemy_collisions:
+                print("collide")
+                for enemy in enemy_collisions:
+                    enemy.kill()
+                    print("enemy killed")
+
+        if self.attack_timer > self.attack_rate:
+            self.ready_to_attack = True
+        else:
+            self.attack_timer += time_delta
+
+        if self.startAttackCooldown == True:
+            self.attackCooldown +=1
+            if self.attackCooldown == 60:
+                self.attackCooldown = 0
+                self.startAttackCooldown = False
+
+
+

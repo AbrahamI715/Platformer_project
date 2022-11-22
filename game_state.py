@@ -1,7 +1,7 @@
 import pygame.draw
 from settings import *
 from tiles import Tile
-from level import Level
+from level1 import Level
 from player import Player
 
 
@@ -18,20 +18,14 @@ class GameState:
         self.time_to_switch = False
         self.state_to_switch_to_id = ""
         self.display_surface = display_surface
-        self.world_shift = 0
-
         self.level = None
 
     def start(self):
         self.time_to_switch = False
-
-
         self.level = Level(level_map, self.display_surface)
 
-
-
-    def update(self):
-        self.level.run()
+    def update(self, time_delta):
+        self.level.run(time_delta)
 
     def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

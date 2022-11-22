@@ -1,7 +1,7 @@
 import pygame.draw
 import pygame_gui
 
-from level import Level
+from level1 import Level
 from tiles import Tile
 
 

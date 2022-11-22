@@ -4,6 +4,7 @@ from main_menu import MainMenuState
 from game_state import GameState
 from options_state import OptionsState
 from settings import *
+from player import Player
 
 
 class MyGameApp:
@@ -33,7 +34,7 @@ class MyGameApp:
                 self.ui_manager.process_events(event)
 
             self.ui_manager.update(time_delta)
-            self.active_state.update()
+            self.active_state.update(time_delta)
 
             self.active_state.draw(self.display_surface)
 

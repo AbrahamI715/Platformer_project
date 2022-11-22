@@ -35,7 +35,7 @@ class MainMenuState:
         if event.type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == self.quit_button:
             quit()
 
-    def update(self):
+    def update(self, time_delta):
         pass
 
     def stop(self):
